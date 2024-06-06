@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wedding Photo Sharing</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f7f7f7;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        input[type="file"] {
+            padding: 10px;
+        }
+        button {
+            padding: 10px;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .gallery {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+        .gallery img {
+            width: 200px;
+            height: 200px;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Wedding Photo Sharing</h1>
+        <form id="uploadForm">
+            <input type="file" name="images" id="image" accept="image/*" multiple>
+            <button type="submit">Upload Photos</button>
+        </form>
+        <div class="gallery" id="gallery"></div>
+    </div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+            const formData = new FormData();
+            const imageFiles = document.getElementById('image').files;
+            for (let i = 0; i < imageFiles.length; i++) {
+                formData.append('images', imageFiles[i]);
+            }
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
+                        alert('Files Uploaded Successfully');
+                        loadImages();
+                    }
+                })
+                .catch(err => console.error(err));
+        });
+
+        function loadImages() {
+            fetch('/photos')
+                .then(response => response.json())
+                .then(data => {
+                    const gallery = document.getElementById('gallery');
+                    gallery.innerHTML = '';
+                    data.forEach(imageUrl => {
+                        const imgElement = document.createElement('img');
+                        imgElement.src = `/uploads/${imageUrl}`;
+                        gallery.appendChild(imgElement);
+                    });
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', loadImages);
+    </script>
+</body>
+</html>
